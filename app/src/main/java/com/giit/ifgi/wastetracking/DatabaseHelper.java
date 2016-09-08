@@ -128,12 +128,12 @@ public class DatabaseHelper {
      * @param lon
      * @param ht
      */
-    public void createEntry( double lat, double lon,double ht ,String time){
+    public void createEntry( double lat, double lon,double ht ,String time,int ph_id){
         try{
             ContentValues cv= new ContentValues();
             cv.put("UID",rowId);
             rowId++; //increment for next entry
-            cv.put(APP_ID,"1");
+            cv.put(APP_ID,ph_id);
             cv.put(LATITUDE,lat);
             cv.put(LONGITUDE,lon);
             cv.put(HEIGHT,ht);
@@ -157,11 +157,12 @@ public class DatabaseHelper {
             Log.d(TAG,"In while loop");
             if (res.getString(res.getColumnIndex(LATITUDE)) != null) {
                 int uid = res.getInt(res.getColumnIndex("UID"));
+                int m_id = res.getInt(res.getColumnIndex(APP_ID));
                 Double lat = Double.parseDouble(res.getString(res.getColumnIndex(LATITUDE)));
                 Double lon = Double.parseDouble(res.getString(res.getColumnIndex(LONGITUDE)));
                 Double ht = Double.parseDouble(res.getString(res.getColumnIndex(HEIGHT)));
                 String dt = res.getString(res.getColumnIndex(CREATED_AT));
-                GPSData data = new GPSData(lat, lon, ht, dt);
+                GPSData data = new GPSData(lat, lon, ht, dt,m_id);
                 data.updateDataToServer();
                 res.moveToNext();
 
@@ -172,6 +173,13 @@ public class DatabaseHelper {
 
             }
         }
+    }
+
+    public void deleteAllRows(){
+        String sql_query1 = "Delete from TABLE_1";
+        ourDatabase.execSQL(sql_query1);
+
+        Log.d(TAG, "Entries deleted");
     }
 
 

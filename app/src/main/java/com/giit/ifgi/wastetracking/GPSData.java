@@ -28,16 +28,19 @@ public class GPSData {
     private Double height;
     private String time;
 
+    private int phoneid;
+
     HttpPost httppost = new HttpPost("http://projects.gi-at-school.de/waste-tracking/insert.php");
     HttpClient httpclient = new DefaultHttpClient();
 
 
 
-    GPSData(double lat, double lon, double ht, String t){
+    GPSData(double lat, double lon, double ht, String t,int ph_id){
         latitude    =   lat;
         longitude   =   lon;
         height      =   ht;
         time        =   t;
+        phoneid     =   ph_id;
     }
 
     public void updateDataToServer() throws IOException {
@@ -48,7 +51,7 @@ public class GPSData {
         postParameters.add(new BasicNameValuePair("longitude", longitude.toString()));
         postParameters.add(new BasicNameValuePair("latitude", latitude.toString()));
         postParameters.add(new BasicNameValuePair("time", time));
-        postParameters.add(new BasicNameValuePair("device", "2"));      //Hardcoding for now
+        postParameters.add(new BasicNameValuePair("device", ""+phoneid));
         Log.d(TAG,"Uploading time is "+time);
         httppost.setEntity(new UrlEncodedFormEntity(postParameters));
         // Execute HTTP Post Request

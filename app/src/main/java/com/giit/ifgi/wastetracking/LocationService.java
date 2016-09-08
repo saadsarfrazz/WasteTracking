@@ -28,6 +28,8 @@ public class LocationService extends Service {
 
     private DatabaseHelper dbH;
 
+    private static int PhoneID;
+
     protected LocationManager locationManager;
     private LocationListener locL;
     private static final long MINIMUM_DISTANCE_CHANGE_FOR_UPDATES = 1; // in Meters
@@ -66,7 +68,10 @@ public class LocationService extends Service {
         dbH.open();//to create database first time
         dbH.close();
 
-        isNetworkAvailable();
+        //Init PhoneID
+        PhoneID = intent.getIntExtra("PhoneID",0);
+        Log.d(TAG,"Phone id is "+PhoneID);
+
 
 
         //        Testing Database here
@@ -132,10 +137,15 @@ public class LocationService extends Service {
 
         super.onDestroy();
 
+        //Delete all Entries from Database
+        dbH.open();
+        dbH.deleteAllRows();
+        dbH.close();
 
+        //Stop listening to location listener
         locationManager.removeUpdates(locL);
 
-        Toast.makeText(this, "Service Stopped", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show();
 
     }
 
@@ -169,15 +179,15 @@ public class LocationService extends Service {
                     dbH.updateDataToServer();
                     dbH.close();
                     //Sending current data to Server
-                    Toast.makeText(LocationService.this, "Network Available for upload", Toast.LENGTH_LONG).show();
-                    GPSData data = new GPSData(latitude,longitude,height,formattedDate);
+                    Toast.makeText(LocationService.this, "Network Available for upload", Toast.LENGTH_SHORT).show();
+                    GPSData data = new GPSData(latitude,longitude,height,formattedDate,PhoneID);
                     data.updateDataToServer();
                 }else{
                     //Save data to database
-                    Toast.makeText(LocationService.this, "NoNetwork:Saving locally", Toast.LENGTH_LONG).show();
+                    Toast.makeText(LocationService.this, "NoNetwork:Saving locally", Toast.LENGTH_SHORT).show();
                    // DatabaseHelper db = new DatabaseHelper(getApplicationContext());
                     dbH.open();
-                    dbH.createEntry(latitude,longitude,height,formattedDate);
+                    dbH.createEntry(latitude,longitude,height,formattedDate,PhoneID);
                     dbH.close();
                 }
 
@@ -190,24 +200,24 @@ public class LocationService extends Service {
                     location.getLongitude(), location.getLatitude()
             );
             Log.d("LocationService: ",location.getLatitude()+" "+location.getLongitude());
-            Toast.makeText(LocationService.this, message, Toast.LENGTH_LONG).show();
+            Toast.makeText(LocationService.this, message, Toast.LENGTH_SHORT).show();
         }
 
         public void onStatusChanged(String s, int i, Bundle b) {
             Toast.makeText(LocationService.this, "Provider status changed",
-                    Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_SHORT).show();
         }
 
         public void onProviderDisabled(String s) {
             Toast.makeText(LocationService.this,
                     "Provider disabled by the user. GPS turned off",
-                    Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_SHORT).show();
         }
 
         public void onProviderEnabled(String s) {
             Toast.makeText(LocationService.this,
                     "Provider enabled by the user. GPS turned on",
-                    Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_SHORT).show();
         }
     }
 

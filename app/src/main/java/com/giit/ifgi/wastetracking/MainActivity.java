@@ -12,6 +12,8 @@ public class MainActivity extends Activity {
     private Button StartService;
     private Button StopService;
 
+    private static final int PhoneID = 3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,6 +23,7 @@ public class MainActivity extends Activity {
         StopService = (Button) findViewById(R.id.stopservice);
 
         final Intent i= new Intent(getApplicationContext(), LocationService.class);
+        i.putExtra("PhoneID",PhoneID);
 
         StartService.setOnClickListener(new View.OnClickListener() {
             @Override
