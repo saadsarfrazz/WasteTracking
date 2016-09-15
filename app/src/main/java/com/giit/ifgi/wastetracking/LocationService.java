@@ -29,11 +29,12 @@ public class LocationService extends Service {
     private DatabaseHelper dbH;
 
     private static int PhoneID;
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //"2016-06-09 2:00:00"
 
     protected LocationManager locationManager;
     private LocationListener locL;
-    private static final long MINIMUM_DISTANCE_CHANGE_FOR_UPDATES = 1; // in Meters
-    private static final long MINIMUM_TIME_BETWEEN_UPDATES = 1000; // in Milliseconds
+    private static final long MINIMUM_DISTANCE_CHANGE_FOR_UPDATES = 10; // in Meters
+    private static final long MINIMUM_TIME_BETWEEN_UPDATES = 60000; // in Milliseconds
 
     @Nullable
     @Override
@@ -74,61 +75,9 @@ public class LocationService extends Service {
 
 
 
-        //        Testing Database here
-//        DatabaseHelper db = new DatabaseHelper(getApplicationContext());
-//        db.open();
-//        db.createEntry(23.34,45.55,2300.3, "2016-06-09 2:00:00");
-
-//        try {
-//            db.updateDataToServer();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        db.close();
-
-
-
-//        Testing web connection
-
-
-
-//        GPSData data = new GPSData(23.34,45.55,2300.3,"2016-07-09 00:00:00");
-//
-//        try {
-//            data.updateDataToServer();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        Log.d(TAG," Network Available: "+isNetworkAvailable());
-
-//        try {
-//            testServer();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
         return START_STICKY; //Used to refer to explicitly started service
     }
 
-//    private void testServer() throws IOException {
-//
-//        HttpClient httpclient = new DefaultHttpClient();
-//        HttpPost httppost = new HttpPost("http://projects.gi-at-school.de/waste-tracking/insert.php");
-//
-//        ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>(4);
-//
-//
-//        postParameters.add(new BasicNameValuePair("longitude", "22.222"));
-//        postParameters.add(new BasicNameValuePair("latitude", "31.222"));
-//        postParameters.add(new BasicNameValuePair("time", "2016-00-09 00:00:40"));
-//        postParameters.add(new BasicNameValuePair("device", "3"));
-//
-//        httppost.setEntity(new UrlEncodedFormEntity(postParameters));
-//
-//        // Execute HTTP Post Request
-//        HttpResponse response = httpclient.execute(httppost);
-//
-//    }
 
     /**
      * Method execute in last when service stops
@@ -167,7 +116,8 @@ public class LocationService extends Service {
                 double height= location.getAltitude();
                 long time = location.getTime();
                 Date date = new Date(time);
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                int accuracy = (int) location.getAccuracy();
+
 
                 sdf.setTimeZone(TimeZone.getTimeZone("GMT+2"));
                 String formattedDate = sdf.format(date);
@@ -179,15 +129,21 @@ public class LocationService extends Service {
                     dbH.updateDataToServer();
                     dbH.close();
                     //Sending current data to Server
-                    Toast.makeText(LocationService.this, "Network Available for upload", Toast.LENGTH_SHORT).show();
-                    GPSData data = new GPSData(latitude,longitude,height,formattedDate,PhoneID);
+
+                    GPSData data = new GPSData(latitude,longitude,height,formattedDate,PhoneID,accuracy);
                     data.updateDataToServer();
+                    if(data.response_nu!=200){
+                        Toast.makeText(LocationService.this, "UploadError", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(LocationService.this, "Data uploaded to Server", Toast.LENGTH_SHORT).show();
+                    }
+
                 }else{
                     //Save data to database
                     Toast.makeText(LocationService.this, "NoNetwork:Saving locally", Toast.LENGTH_SHORT).show();
                    // DatabaseHelper db = new DatabaseHelper(getApplicationContext());
                     dbH.open();
-                    dbH.createEntry(latitude,longitude,height,formattedDate,PhoneID);
+                    dbH.createEntry(latitude,longitude,height,formattedDate,PhoneID,accuracy);
                     dbH.close();
                 }
 

@@ -7,12 +7,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.IOException;
+
 public class MainActivity extends Activity {
 
     private Button StartService;
     private Button StopService;
 
-    private static final int PhoneID = 3;
+    private static final int PhoneID = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +32,7 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
 
                 startService(i);
+
             }
 
         });

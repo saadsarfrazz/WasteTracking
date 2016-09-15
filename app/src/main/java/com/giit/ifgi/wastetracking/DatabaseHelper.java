@@ -25,6 +25,7 @@ public class DatabaseHelper {
     private static final String LONGITUDE = "Longitude";
     private static final String HEIGHT  =   "Height";
     private static final String CREATED_AT = "Cr_time"; //Time at which coordinates were collected
+    private static final String ACCURACY = "Accuracy";
 
     private static  String App_ID_Value; //Will be assigned once to an application only
 
@@ -67,7 +68,7 @@ public class DatabaseHelper {
             String query = "CREATE TABLE " + TABLE_NAME + "(" +"UID INTEGER PRIMARY KEY, " +
                     APP_ID + " TEXT NOT NULL, " +
                      CREATED_AT + " DATETIME, " + LATITUDE + " DOUBLE, " + LONGITUDE + " DOUBLE, " +
-                     HEIGHT + " DOUBLE NOT NULL);";
+                    ACCURACY + " INTEGER, " +HEIGHT + " DOUBLE NOT NULL);";
             Log.d("Msg table Created ", query);
             db.execSQL(query);
             Log.d(TAG,"Table Created");
@@ -128,7 +129,7 @@ public class DatabaseHelper {
      * @param lon
      * @param ht
      */
-    public void createEntry( double lat, double lon,double ht ,String time,int ph_id){
+    public void createEntry( double lat, double lon,double ht ,String time,int ph_id, int acc){
         try{
             ContentValues cv= new ContentValues();
             cv.put("UID",rowId);
@@ -138,6 +139,7 @@ public class DatabaseHelper {
             cv.put(LONGITUDE,lon);
             cv.put(HEIGHT,ht);
             cv.put(CREATED_AT,time);
+            cv.put(ACCURACY,acc);
             ourDatabase.insert(TABLE_NAME,null,cv);
             Log.d(TAG, "DB entry successfull :rid "+ rowId);
             Toast.makeText(ourContext, "Entry saved with UID: "+rowId, Toast.LENGTH_SHORT).show();
@@ -162,14 +164,16 @@ public class DatabaseHelper {
                 Double lon = Double.parseDouble(res.getString(res.getColumnIndex(LONGITUDE)));
                 Double ht = Double.parseDouble(res.getString(res.getColumnIndex(HEIGHT)));
                 String dt = res.getString(res.getColumnIndex(CREATED_AT));
-                GPSData data = new GPSData(lat, lon, ht, dt,m_id);
+                int accu = res.getInt(res.getColumnIndex(ACCURACY));
+                GPSData data = new GPSData(lat, lon, ht, dt,m_id,accu);
                 data.updateDataToServer();
                 res.moveToNext();
 
                 //If succeeded then delete entry from db to avoid sending same entries again
-                String sql_query1 = "Delete from TABLE_1 where "+"UID"+  " = '" + uid + "'";
-                ourDatabase.execSQL(sql_query1);
-
+                if(data.response_nu==200) {
+                    String sql_query1 = "Delete from TABLE_1 where " + "UID" + " = '" + uid + "'";
+                    ourDatabase.execSQL(sql_query1);
+                }
 
             }
         }
